@@ -37,7 +37,6 @@ class SparseSolver
     bool setIndividualsToZeroOrOne();
     bool setMarkersToZero();
     bool setIndividualEqualityConstraints();
-    double solveLP();
     void solveMIP(const Cut&);
     
   public:

@@ -102,9 +102,6 @@ void printInitialMessages(const CSFS_Data &data)
                 << "  " << asctime(data.startTime) << "\n"
                 << "  Reading data from:\n    " << data.inputFilename << "\n\n";
 
-  if ( !((data.inputCutfileName).empty()) )
-    consoleOutput << "  Reading cuts from:\n    " << data.inputCutfileName << "\n\n";
-
   consoleOutput << "  Solutions will be written to:\n    " << data.logfileName << "\n\n";
 
   consoleOutput << "  Assumed the first " << data.numHeadCols

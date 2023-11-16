@@ -42,7 +42,7 @@ EXE = csfs
 _COMMONOBJ = ConfigParser.o Cut.o CutCreator.o CutSet.o Individual.o Marker.o \
              CSFS.o CSFS_Data.o CSFS_Utils.o RelaxationSolver.o SparseSolver.o Solution.o Timer.o \
              VariableEqualities.o
-CSFSOBJ    = main.o CutAndSolveController.o CutAndSolveWorker.o CutfileReader.o Parallel.o $(_COMMONOBJ)
+CSFSOBJ    = main.o CutAndSolveController.o CutAndSolveWorker.o Parallel.o $(_COMMONOBJ)
 
 
 #---------------------------------------------------------------------------------------------------
@@ -94,10 +94,9 @@ $(OBJDIR)/Cut.o: $(addprefix $(SRCDIR)/, Cut.cpp Cut.h)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/CutAndSolveController.o:	$(addprefix $(SRCDIR)/, CutAndSolveController.cpp CutAndSolveController.h) \
-                               			$(addprefix $(OBJDIR)/, CutCreator.o CutfileReader.o \
-													   															 	CSFS.o Parallel.o \
-                                                       			RelaxationSolver.o Solution.o \
-                                                       			VariableEqualities.o)
+                               			$(addprefix $(OBJDIR)/, CutCreator.o CSFS.o \
+																														Parallel.o RelaxationSolver.o \
+																														Solution.o VariableEqualities.o)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)/CutAndSolveWorker.o: $(addprefix $(SRCDIR)/, CutAndSolveWorker.cpp CutAndSolveWorker.h) \
@@ -110,16 +109,6 @@ $(OBJDIR)/CutCreator.o: $(addprefix $(SRCDIR)/, CutCreator.cpp CutCreator.h) \
 
 $(OBJDIR)/CutSet.o: $(addprefix $(SRCDIR)/, CutSet.cpp CutSet.h) \
                     $(addprefix $(OBJDIR)/, Cut.o)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OBJDIR)/CutfileReader.o: $(addprefix $(SRCDIR)/, CutfileReader.cpp CutfileReader.h) \
-                           $(addprefix $(OBJDIR)/, Cut.o Individual.o Marker.o CSFS_Data.o \
-                                                   VariableEqualities.o)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OBJDIR)/CutfileWriter.o: $(addprefix $(SRCDIR)/, CutfileWriter.cpp CutfileWriter.h) \
-                           $(addprefix $(OBJDIR)/, CutSet.o Individual.o Marker.o CSFS_Data.o \
-                                                   VariableEqualities.o)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/Individual.o: $(addprefix $(SRCDIR)/, Individual.cpp Individual.h)
