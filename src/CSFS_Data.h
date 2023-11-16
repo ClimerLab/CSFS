@@ -51,9 +51,6 @@ public:
 	const std::size_t numHeadCols;
 
 	const std::string logfileName;
-	const std::string inputCutfileName;
-	const bool inputCutfileProvided;
-	const std::string outputCutfileName;	
 
 	const std::size_t numBins;
   const std::size_t numStates;

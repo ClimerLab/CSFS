@@ -4,7 +4,6 @@
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
 #include "CutCreator.h"
-#include "CutfileReader.h"
 #include "CSFS.h"
 #include "Parallel.h"
 #include "RelaxationSolver.h"
@@ -18,7 +17,6 @@ class CutAndSolveController
     CutCreator cc;
     RelaxationSolver rs;
     CutSet cutSet;
-    CutfileReader cutfileReader;
     
     std::size_t world_size;
     std::size_t iter;
@@ -38,8 +36,7 @@ class CutAndSolveController
     
     double totalSparseTime;
     std::set<std::size_t> checkIn;
-    
-    void readCompletedCutsFromCutfile();
+        
     void receiveCompletion();
     void sendProblem(const Cut &);
     void sendProblems(Cut);

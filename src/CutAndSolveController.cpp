@@ -7,41 +7,41 @@ CutAndSolveController::CutAndSolveController(const CSFS_Data &_data) : data(&_da
                                                               cc(_data),
                                                               rs(_data),
                                                               cutSet(data->numStates),
-                                                              cutfileReader(_data),
                                                               world_size(Parallel::getWorldSize()),
                                                               iter(0),
                                                               lb(data->STARTING_LOWER_BOUND),
                                                               ub(data->STARTING_UPPER_BOUND),
-                                                              totalSparseTime(0)                                                              
-{
-  if (data->USE_SOLUTION_POOL_THRESHOLD && data->SOLUTION_POOL_THRESHOLD > lb)
+                                                              totalSparseTime(0) {
+  if (data->USE_SOLUTION_POOL_THRESHOLD && data->SOLUTION_POOL_THRESHOLD > lb) {
     lb = data->SOLUTION_POOL_THRESHOLD;
+  }
 
-  for (std::size_t i = world_size - 1; i > 0; --i)
+  for (std::size_t i = world_size - 1; i > 0; --i) {
     availableWorkers.push(i);
+  }
 
   logfile.open(data->logfileName.c_str());
-  if (!logfile.is_open())
+  if (!logfile.is_open()) {
     throw std::runtime_error("Logfile could not be opened");
+  }
 
   // *
   // * Set up the vector of Markers
   // *
   markers.reserve(data->numStates);
-  for (std::size_t i = 0; i < data->numStates; ++i)
-  {
+  for (std::size_t i = 0; i < data->numStates; ++i) {
     std::size_t numGrpOneCarrying = 0;
     std::size_t numGrpTwoCarrying = 0;
 
-    for (std::size_t j = data->grpOneStart; j <= data->grpOneEnd; ++j)
-    {
-      if (data->exprs[i][j])
+    for (std::size_t j = data->grpOneStart; j <= data->grpOneEnd; ++j) {
+      if (data->exprs[i][j]) {
         ++numGrpOneCarrying;
+      }
     }
-    for (std::size_t j = data->grpTwoStart; j <= data->grpTwoEnd; ++j)
-    {
-      if (data->exprs[i][j])
+    for (std::size_t j = data->grpTwoStart; j <= data->grpTwoEnd; ++j) {
+      if (data->exprs[i][j]) {
         ++numGrpTwoCarrying;
+      }
     }
     markers.emplace_back(i, numGrpOneCarrying, numGrpTwoCarrying);
   }
@@ -50,14 +50,13 @@ CutAndSolveController::CutAndSolveController(const CSFS_Data &_data) : data(&_da
   // * Set up the vector of Individuals
   // *
   individuals.reserve(data->numIndiv);
-  for (std::size_t j = 0; j < data->numIndiv; ++j)
-  {
+  for (std::size_t j = 0; j < data->numIndiv; ++j) {
     // Count the number of nonzero marker states for this individual
     std::size_t numNonzeroStates = 0;
-    for (std::size_t i = 0; i < data->numStates; ++i)
-    {
-      if (data->exprs[i][j] == 1)
+    for (std::size_t i = 0; i < data->numStates; ++i) {
+      if (data->exprs[i][j] == 1) {
         ++numNonzeroStates;
+      }
     }
 
     // Determine the group number
@@ -65,16 +64,11 @@ CutAndSolveController::CutAndSolveController(const CSFS_Data &_data) : data(&_da
 
     individuals.emplace_back(Individual(j, group, numNonzeroStates));
   }
-
-  readCompletedCutsFromCutfile();
-  if (!data->inputCutfileProvided)
-  {
-    setMarkersToZero();
-    setIndividualsToZero();
-    setIndividualEqualityConstraints();
-  }
+  
+  setMarkersToZero();
+  setIndividualsToZero();
+  setIndividualEqualityConstraints();
 }
-
 
 //------------------------------------------------------------------------------
 // Returns true if the upper and lower bounds have crossed.
@@ -83,13 +77,10 @@ CutAndSolveController::CutAndSolveController(const CSFS_Data &_data) : data(&_da
 // this will only return true if the upper bound is less than or equal to the
 // SOLUTION_POOL_THRESHOLD value set in the config file.
 //------------------------------------------------------------------------------
-bool CutAndSolveController::converged() const
-{
+bool CutAndSolveController::converged() const {
   static bool trueConvergence = false;
-  if (data->USE_SOLUTION_POOL_THRESHOLD)
-  {
-    if (!trueConvergence && ub <= lb && ub > data->SOLUTION_POOL_THRESHOLD)
-    {
+  if (data->USE_SOLUTION_POOL_THRESHOLD) {
+    if (!trueConvergence && ub <= lb && ub > data->SOLUTION_POOL_THRESHOLD) {
       trueConvergence = true;
       std::cout << "True convergence occurred (optimal solution = " << lb
                 << ") but will continue to search for patterns with objective"
@@ -105,19 +96,18 @@ bool CutAndSolveController::converged() const
 //------------------------------------------------------------------------------
 // Returns the lower bound
 //------------------------------------------------------------------------------
-double CutAndSolveController::getLb() const
-{
+double CutAndSolveController::getLb() const {
   return lb;
 }
 
 //------------------------------------------------------------------------------
 // Returns a string of the ranks of workers that are currently working
 //------------------------------------------------------------------------------
-std::string CutAndSolveController::getStringOfUnavailableWorkers() const
-{
+std::string CutAndSolveController::getStringOfUnavailableWorkers() const {
   std::ostringstream oss;
-  for (auto it = std::begin(unavailableWorkers); it != std::end(unavailableWorkers); ++it)
+  for (auto it = std::begin(unavailableWorkers); it != std::end(unavailableWorkers); ++it) {
     oss << *it << " ";
+  }
 
   return oss.str();
 }
@@ -126,8 +116,7 @@ std::string CutAndSolveController::getStringOfUnavailableWorkers() const
 //------------------------------------------------------------------------------
 // Returns the upper bound
 //------------------------------------------------------------------------------
-double CutAndSolveController::getUb() const
-{
+double CutAndSolveController::getUb() const {
   return ub;
 }
 
@@ -135,58 +124,15 @@ double CutAndSolveController::getUb() const
 //------------------------------------------------------------------------------
 // Returns the number of workers currently working on a sparse problem
 //------------------------------------------------------------------------------
-std::size_t CutAndSolveController::numWorkersWorking() const
-{
+std::size_t CutAndSolveController::numWorkersWorking() const {
   return unavailableWorkers.size();
-}
-
-
-//------------------------------------------------------------------------------
-// Reads the completed cuts from the cutfile and adds them to the problem
-//------------------------------------------------------------------------------
-inline void CutAndSolveController::readCompletedCutsFromCutfile()
-{
-  while (cutfileReader.phase() == cutfileReader.READING_COMPLETED_CUTS)
-  {
-    Cut cut;
-    std::vector<std::pair<std::size_t, bool> > markersFixedAfterCut;
-    std::vector<std::pair<std::size_t, bool> > individualsFixedAfterCut;
-    VariableEqualities individualEqualitiesAfterCut;
-    double lowerBoundAfterCut;
-    double upperBoundAfterCut;
-
-    cutfileReader.nextCut(&cut,
-                          &markersFixedAfterCut,
-                          &individualsFixedAfterCut,
-                          &individualEqualitiesAfterCut,
-                          &lowerBoundAfterCut,
-                          &upperBoundAfterCut);
-
-    if (!cut.empty())
-    {
-      cutSet.add(cut);
-      rs.add(cut);
-    }
-
-    for (auto it = std::begin(individualsFixedAfterCut); it != std::end(individualsFixedAfterCut); ++it)
-      setIndiv(it->first, it->second);
-
-    individualEqualities.merge(individualEqualitiesAfterCut);
-
-    for (auto it = std::begin(markersFixedAfterCut); it != std::end(markersFixedAfterCut); ++it)
-      setMark(it->first, it->second);
-
-    ub = std::min(ub, upperBoundAfterCut);
-    lb = std::max(lb, lowerBoundAfterCut);
-  }
 }
 
 
 //------------------------------------------------------------------------------
 // Receives a completed sparse problem from a worker
 //------------------------------------------------------------------------------
-inline void CutAndSolveController::receiveCompletion()
-{
+inline void CutAndSolveController::receiveCompletion() {
   assert(availableWorkers.size() < world_size - 1); // Cannot receive problem when no workers are working
 
   MPI_Status status;
@@ -200,10 +146,11 @@ inline void CutAndSolveController::receiveCompletion()
   // * Receive the solution
   // *
 
-  //#ifndef NDEBUG
-    MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+  #ifndef NDEBUG
+    
     std::cout << "Controller about to receive completion from rank_" << status.MPI_SOURCE << std::endl;
-  //#endif
+  #endif
 
   MPI_Recv(&sparseNumSol, 1, CUSTOM_SIZE_T, status.MPI_SOURCE, Parallel::SPARSE_TAG, MPI_COMM_WORLD, &status);
   
@@ -214,17 +161,17 @@ inline void CutAndSolveController::receiveCompletion()
   
   solutionPool.resize(sparseNumSol);
   objValues.resize(sparseNumSol);
-  for (std::size_t i = 0; i < solutionPool.size(); ++i)
-  {
+  for (std::size_t i = 0; i < solutionPool.size(); ++i) {
     MPI_Recv(&objValues[i], 1, MPI_DOUBLE, MPI_ANY_SOURCE, Parallel::SPARSE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     
     #ifndef NDEBUG
       std::cout << "Controller received objective value from rank_" << status.MPI_SOURCE << std::endl;
     #endif
-    if (i == 0)
+    if (i == 0) {
       bestObjValue = objValues[i];
-    else if (objValues[i] > bestObjValue)
+    } else if (objValues[i] > bestObjValue) {
       bestObjValue = objValues[i];
+    }
     
     solutionPool[i].resize(data->setSize);
     MPI_Recv(&solutionPool[i][0], solutionPool[i].size(), CUSTOM_SIZE_T, status.MPI_SOURCE, Parallel::SPARSE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -250,8 +197,7 @@ inline void CutAndSolveController::receiveCompletion()
     lb = std::max(bestObjValue, lb);
   totalSparseTime += sparseRunTime;  
   
-  for (std::size_t i = 0; i < solutionPool.size(); ++i)
-  {
+  for (std::size_t i = 0; i < solutionPool.size(); ++i) {
     if (!data->QUIET)
       std::cout << "\nSolution " << i + 1 << " of " << solutionPool.size()
                 << " from rank_" << status.MPI_SOURCE << ":\n";
@@ -690,8 +636,7 @@ void CutAndSolveController::waitForWorkers()
 //------------------------------------------------------------------------------
 // The main function for cut and solve
 //------------------------------------------------------------------------------
-void CutAndSolveController::work()
-{
+void CutAndSolveController::work() {
   static bool first = true;
   Cut cut;
   int cutCreatedFrom;
@@ -700,12 +645,8 @@ void CutAndSolveController::work()
   std::vector<std::pair<std::size_t, bool> > markersFixedAfterCut;
   std::vector<std::pair<std::size_t, bool> > individualsFixedAfterCut;
   VariableEqualities individualEqualitiesAfterCut;
-  double lowerBoundAfterCut;
-  double upperBoundAfterCut;
-  bool cutWasReadFromFile = true;
 
-  if (first && !data->QUIET)
-  {
+  if (first && !data->QUIET) {
     std::cout << "---------------------------\n"
               << "   Initialization"
               << "\n---------------------------\n"
@@ -715,8 +656,7 @@ void CutAndSolveController::work()
               << "\n" << std::endl;
 
     first = false;
-  }
-  //exit(1);
+  }  
 
   if (!data->QUIET)
     std::cout << "---------------------------\n"
@@ -725,101 +665,69 @@ void CutAndSolveController::work()
 
 
   // *
-  // * Get the next cut to solve, either by reading it from the cutfile or
-  // * creating it from scratch
+  // * Get the next cut to solve
   // *
-  if (cutfileReader.nextCutAvail())
-  {
-    do
-    {
-      if (!cutfileReader.nextCut(&cut,
-                                 &markersFixedAfterCut,
-                                 &individualsFixedAfterCut,
-                                 &individualEqualitiesAfterCut,
-                                 &lowerBoundAfterCut,
-                                 &upperBoundAfterCut))
-      {
-        break;
-      }
-    } while (cutSet.exists(cut));
-
-    if (cut.empty())
-      goto CREATE_CUT_MANUALLY;
-    else if (!data->QUIET)
-      std::cout << "Reading Cut_" << cutfileReader.getNumberOfLastCutRead() << std::endl;
-  }
-  else
-  {
-    CREATE_CUT_MANUALLY:
-    cutWasReadFromFile = false;
-
-    if (!data->QUIET)
-      std::cout << "Solving relaxation..." << std::endl;
+  if (!data->QUIET)
+    std::cout << "Solving relaxation..." << std::endl;
 
     
-    // *
-    // * Solve a relaxation
-    // *
-    rs.solve();
-    ub = std::min(ub, rs.getObjValue());
+  // *
+  // * Solve a relaxation
+  // *
+  rs.solve();
+  ub = std::min(ub, rs.getObjValue());
 
 
-    // *
-    // * Print the relaxation values
-    // *
-    if (!data->QUIET)
-      std::cout << "Relaxation found objective value of " << ub
-                << "\nRelaxation took " << rs.getCpuTimeToSolve()
-                << " seconds" << std::endl;
-    if (data->VERBOSE)
-      std::cout << rs.getStringOfRelaxationValues() << std::endl;
+  // *
+  // * Print the relaxation values
+  // *
+  if (!data->QUIET)
+    std::cout << "Relaxation found objective value of " << ub
+              << "\nRelaxation took " << rs.getCpuTimeToSolve()
+              << " seconds" << std::endl;
+  if (data->VERBOSE)
+    std::cout << rs.getStringOfRelaxationValues() << std::endl;
 
 
-    // *
-    // * Check for integrality
-    // *
-    if (rs.integral())
-    {
-      ub = rs.getObjValue();
-      lb = rs.getObjValue();
-      CSFS::printSolution(rs.getIntegralSolution(), &logfile, data);
-    }
-
-
-    // *
-    // * Return if convergence occurred
-    // *
-    if (converged())
-    {
-      std::cout << "Convergence occurred.\n";
-      return;
-    }
-
-    // *
-    // * Create a cut to solve
-    // *
-    cut = cc.createCut(cutSet,
-                       markers,
-                       individuals,
-                       rs.getMarkVals(),
-                       data->maxNumCuts(lb),
-                       &cutCreatedFrom,
-                       &indivCutWasBasedOn);
-
-    if (!data->QUIET)
-    {
-      if (cutCreatedFrom == cc.RELAXATION)
-        std::cout << "Cut was created from relaxed values" << std::endl;
-      else if (cutCreatedFrom == cc.MERGE)
-        std::cout << "Cut was created from merging two previous cuts" << std::endl;
-      else if (cutCreatedFrom == cc.INDIVIDUAL)
-        std::cout << "Cut was created from indiv_" << indivCutWasBasedOn
-                  << "'s marker states" << std::endl;
-    }
+  // *
+  // * Check for integrality
+  // *
+  if (rs.integral()) {
+    ub = rs.getObjValue();
+    lb = rs.getObjValue();
+    CSFS::printSolution(rs.getIntegralSolution(), &logfile, data);
   }
 
+  // *
+  // * Return if convergence occurred
+  // *
+  if (converged()) {
+    std::cout << "Convergence occurred.\n";
+    return;
+  }
+
+  // *
+  // * Create a cut to solve
+  // *
+  cut = cc.createCut(cutSet,
+                     markers,
+                     individuals,
+                     rs.getMarkVals(),
+                     data->maxNumCuts(lb),
+                     &cutCreatedFrom,
+                     &indivCutWasBasedOn);
+
+  if (!data->QUIET) {
+    if (cutCreatedFrom == cc.RELAXATION)
+      std::cout << "Cut was created from relaxed values" << std::endl;
+    else if (cutCreatedFrom == cc.MERGE)
+      std::cout << "Cut was created from merging two previous cuts" << std::endl;
+    else if (cutCreatedFrom == cc.INDIVIDUAL)
+      std::cout << "Cut was created from indiv_" << indivCutWasBasedOn
+                << "'s marker states" << std::endl;
+  }
+  
   const double prevLb = lb;
-  //adjustProblemSize();
 
   // *
   // * Send sparse problems based on the cut to workers
@@ -832,39 +740,15 @@ void CutAndSolveController::work()
   // * we just sent was read from the cutfile
   // *
   bool individualWasSet = false;
-  if (cutWasReadFromFile)
-  {
-    for (auto it = std::begin(individualsFixedAfterCut); it != std::end(individualsFixedAfterCut); ++it)
-      setIndiv(it->first, it->second);
 
-    individualEqualities.merge(individualEqualitiesAfterCut);
-
-    for (auto it = std::begin(markersFixedAfterCut); it != std::end(markersFixedAfterCut); ++it)
-      setMark(it->first, it->second);
-
-    ub = std::min(ub, upperBoundAfterCut);
-    lb = std::max(lb, lowerBoundAfterCut);
-
-    // *
-    // * Return if convergence occurred
-    // *
-    if (converged())
-    {
-      std::cout << "Convergence occurred.\n";
-      return;
-    }
-  }
   // *
-  // * Else if the cut was based on an individual, set that individual to 0
+  // * If the cut was based on an individual, set that individual to 0
   // *
-  else if (cutCreatedFrom == cc.INDIVIDUAL)
-  {
+  if (cutCreatedFrom == cc.INDIVIDUAL) {
     setIndiv(indivCutWasBasedOn, 0);
 
-    if (individualEqualities.exists(indivCutWasBasedOn))
-    {
-      for (std::size_t j = 0; j < data->numIndiv; ++j)
-      {
+    if (individualEqualities.exists(indivCutWasBasedOn)) {
+      for (std::size_t j = 0; j < data->numIndiv; ++j) {
         if (individualEqualities.exists(indivCutWasBasedOn, j))
           setIndiv(j, 0);
       }
@@ -883,10 +767,8 @@ void CutAndSolveController::work()
   // *
   // * Try to set markers to zero or one and individuals equal to each other
   // *
-  if (!cutWasReadFromFile && (std::abs(lb - prevLb) > data->TOL || individualWasSet))
-  {
-    if (setMarkersToZero())
-    {
+  if (std::abs(lb - prevLb) > data->TOL || individualWasSet) {
+    if (setMarkersToZero()) {
       setIndividualsToZero();
       setIndividualEqualityConstraints();
     }
