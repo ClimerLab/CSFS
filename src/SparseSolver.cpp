@@ -484,7 +484,7 @@ void SparseSolver::solveMIP(const Cut& mipCutToSolve)
       cplex.setParam(IloCplex::Param::RandomSeed, data->CPLEX_SEED);
       cplex.setParam(IloCplex::Param::MIP::Pool::Replace, CPX_SOLNPOOL_DIV);
       cplex.setParam(IloCplex::Param::MIP::Pool::Intensity, 4);
-      cplex.setParam(IloCplex::Param::MIP::Limits::Populate, 1000);
+      cplex.setParam(IloCplex::Param::MIP::Limits::Populate, 100000);
             
       // *
       // * Enumerate all solutions
