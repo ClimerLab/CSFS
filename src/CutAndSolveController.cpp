@@ -162,8 +162,8 @@ inline void CutAndSolveController::receiveCompletion() {
   solutionPool.resize(sparseNumSol);
   objValues.resize(sparseNumSol);
   for (std::size_t i = 0; i < solutionPool.size(); ++i) {
-    MPI_Recv(&objValues[i], 1, MPI_DOUBLE, MPI_ANY_SOURCE, Parallel::SPARSE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    
+    MPI_Recv(&objValues[i], 1, MPI_DOUBLE, status.MPI_SOURCE, Parallel::SPARSE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
     #ifndef NDEBUG
       std::cout << "Controller received objective value from rank_" << status.MPI_SOURCE << std::endl;
     #endif
@@ -175,7 +175,7 @@ inline void CutAndSolveController::receiveCompletion() {
     
     solutionPool[i].resize(data->setSize);
     MPI_Recv(&solutionPool[i][0], solutionPool[i].size(), CUSTOM_SIZE_T, status.MPI_SOURCE, Parallel::SPARSE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-   }
+  }
 
   #ifndef NDEBUG
     if (sparseNumSol > 0)
