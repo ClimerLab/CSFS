@@ -1,7 +1,6 @@
 #ifndef CUT_H
 #define CUT_H
 
-#include <assert.h>
 #include <sstream>
 #include <vector>
 

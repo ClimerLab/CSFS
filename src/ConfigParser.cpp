@@ -437,12 +437,14 @@ int ConfigParser::getInt(const std::string &parameterName) const
 //------------------------------------------------------------------------------
 // Returns the value mapped to the parameter as a boost::multiprecision::cpp_int
 //------------------------------------------------------------------------------
+/*
 boost::multiprecision::cpp_int ConfigParser::getMultiprecisionInt(const std::string &parameterName) const
 {
   std::string value = findValue(parameterName);
   boost::multiprecision::cpp_int returnValue(value);
   return returnValue;
 }
+*/
 
 
 //------------------------------------------------------------------------------

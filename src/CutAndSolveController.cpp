@@ -1,4 +1,5 @@
 #include "CutAndSolveController.h"
+#include <cassert>
 
 //------------------------------------------------------------------------------
 //    Constructor

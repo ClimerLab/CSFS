@@ -1,7 +1,7 @@
 #ifndef CNS_CONTROLLER_H
 #define CNS_CONTROLLER_H
 
-#include <boost/multiprecision/cpp_dec_float.hpp>
+//#include <boost/multiprecision/cpp_dec_float.hpp>
 
 #include "CutCreator.h"
 #include "CSFS.h"

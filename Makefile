@@ -8,12 +8,10 @@ LIBFORMAT  = static_pic
 #
 #---------------------------------------------------------------------------------------------------
 
-CPLEXDIR      = /opt/ibm/ILOG/CPLEX_Studio221/cplex
-CONCERTDIR    = /opt/ibm/ILOG/CPLEX_Studio221/concert
-#CPLEXDIR      = /cluster/software/cplex-studio/cplex-studio-12.7.0/cplex
-#CONCERTDIR    = /cluster/software/cplex-studio/cplex-studio-12.7.0/concert
-# CPLEXDIR      = /Applications/CPLEX_Studio128/cplex
-# CONCERTDIR    = /Applications/CPLEX_Studio128/concert
+#CPLEXDIR      = /opt/ibm/ILOG/CPLEX_Studio221/cplex
+#CONCERTDIR    = /opt/ibm/ILOG/CPLEX_Studio221/concert
+CPLEXDIR      = /cluster/software/cplex_studio/v2211/cplex
+CONCERTDIR      = /cluster/software/cplex_studio/v2211/concert
 
 #---------------------------------------------------------------------------------------------------
 # Compiler selection
@@ -57,9 +55,9 @@ CXXFLAGS = -O3 -Wall -fPIC -fexceptions -DIL_STD -std=c++11 -fno-strict-aliasing
 
 CPLEXLIBDIR    = $(CPLEXDIR)/lib/$(SYSTEM)/$(LIBFORMAT)
 CONCERTLIBDIR  = $(CONCERTDIR)/lib/$(SYSTEM)/$(LIBFORMAT)
-OPENMPIT	   = /usr/lib/lam/lib
+#OPENMPIT	   = /usr/lib/lam/lib
 
-CXXLNDIRS      = -L$(CPLEXLIBDIR) -L$(CONCERTLIBDIR) -L$(OPENMPIT)
+CXXLNDIRS      = -L$(CPLEXLIBDIR) -L$(CONCERTLIBDIR)
 CXXLNFLAGS     = -lconcert -lilocplex -lcplex -lm -lpthread -ldl
 
 #---------------------------------------------------------------------------------------------------
@@ -88,10 +86,10 @@ $(OBJDIR)/main.o: $(addprefix $(SRCDIR)/, main.cpp main.h) \
 
 $(OBJDIR)/ConfigParser.o: $(addprefix $(SRCDIR)/, ConfigParser.cpp ConfigParser.h) \
                           $(addprefix $(OBJDIR)/, CSFS_Utils.o)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/Cut.o: $(addprefix $(SRCDIR)/, Cut.cpp Cut.h)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/CutAndSolveController.o:	$(addprefix $(SRCDIR)/, CutAndSolveController.cpp CutAndSolveController.h) \
                                			$(addprefix $(OBJDIR)/, CutCreator.o CSFS.o \
@@ -105,48 +103,48 @@ $(OBJDIR)/CutAndSolveWorker.o: $(addprefix $(SRCDIR)/, CutAndSolveWorker.cpp Cut
 
 $(OBJDIR)/CutCreator.o: $(addprefix $(SRCDIR)/, CutCreator.cpp CutCreator.h) \
                         $(addprefix $(OBJDIR)/, CutSet.o Individual.o Marker.o CSFS_Data.o)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/CutSet.o: $(addprefix $(SRCDIR)/, CutSet.cpp CutSet.h) \
                     $(addprefix $(OBJDIR)/, Cut.o)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/Individual.o: $(addprefix $(SRCDIR)/, Individual.cpp Individual.h)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/Marker.o: $(addprefix $(SRCDIR)/, Marker.cpp Marker.h)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/CSFS.o: $(addprefix $(SRCDIR)/, CSFS.cpp CSFS.h) \
                   $(addprefix $(OBJDIR)/, CSFS_Data.o Solution.o)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)/CSFS_Data.o: $(addprefix $(SRCDIR)/, CSFS_Data.cpp CSFS_Data.h) \
                       $(addprefix $(OBJDIR)/, ConfigParser.o CSFS_Utils.o Timer.o)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/CSFS_Utils.o: $(addprefix $(SRCDIR)/, CSFS_Utils.cpp CSFS_Utils.h)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/Parallel.o: $(addprefix $(SRCDIR)/, Parallel.cpp Parallel.h)
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/SparseSolver.o: $(addprefix $(SRCDIR)/, SparseSolver.cpp SparseSolver.h) \
                           $(addprefix $(OBJDIR)/, CutSet.o CSFS.o Solution.o Timer.o)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)/RelaxationSolver.o: $(addprefix $(SRCDIR)/, RelaxationSolver.cpp RelaxationSolver.h) \
                               $(addprefix $(OBJDIR)/, CutSet.o CSFS_Data.o Solution.o Timer.o)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)/Solution.o: $(addprefix $(SRCDIR)/, Solution.cpp Solution.h)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/Timer.o: $(addprefix $(SRCDIR)/, Timer.cpp Timer.h)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR)/VariableEqualities.o: $(addprefix $(SRCDIR)/, VariableEqualities.cpp VariableEqualities.h)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 #---------------------------------------------------------------------------------------------------
 .PHONY: clean cleanest

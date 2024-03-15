@@ -1,4 +1,5 @@
 #include "CutAndSolveWorker.h"
+#include <cassert>
 
 //------------------------------------------------------------------------------
 //    Constructor

@@ -1,6 +1,7 @@
 #include "CSFS.h"
 #include <iomanip>
 #include <iostream>
+#include <cassert>
 
 //------------------------------------------------------------------------------
 // Returns the next coordinates by reference.

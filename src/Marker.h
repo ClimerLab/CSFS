@@ -11,7 +11,6 @@
 #ifndef MARKER_H
 #define MARKER_H
 
-#include <assert.h>
 #include <cstddef>
 
 class Marker

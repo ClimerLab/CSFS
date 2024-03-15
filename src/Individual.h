@@ -1,7 +1,6 @@
 #ifndef INDIVIDUAL_H
 #define INDIVIDUAL_H
 
-#include <assert.h>
 #include <vector>
 
 class Individual

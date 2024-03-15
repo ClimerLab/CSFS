@@ -1,5 +1,6 @@
 #include "PatfileReader.h"
 #include "Cut.h"
+#include <cassert>
 
 //------------------------------------------------------------------------------
 //    Constructors

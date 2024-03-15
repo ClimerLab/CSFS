@@ -1,13 +1,12 @@
 #ifndef CSFS_UTILS_H
 #define CSFS_UTILS_H
 
-#include <assert.h>
-#include <boost/multiprecision/cpp_int.hpp>
+//#include <boost/multiprecision/cpp_int.hpp>
 #include <random>
 
 namespace CSFSUtils
 {
-  boost::multiprecision::cpp_int C(const std::size_t, std::size_t);
+  //boost::multiprecision::cpp_int C(const std::size_t, std::size_t);
   std::mt19937 createRng();
   std::size_t genRand();
   std::string getNthWord(const std::string &, std::size_t);

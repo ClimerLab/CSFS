@@ -1,4 +1,5 @@
 #include "RelaxationSolver.h"
+#include <cassert>
 
 //------------------------------------------------------------------------------
 //    Constructor
